@@ -29,7 +29,7 @@ import numpy as np
 
 
 # class to hold buffer of 4 elements and updated product
-# could probably track sum instead of product to avoid division especially
+# could probably track sum instead of product to avoid multiplication/division
 class FourBuffer():
     def __init__(self):
         self.vals = []
@@ -51,54 +51,42 @@ class FourBuffer():
     
 
 def find_greatest_product(arr):
-    # for tracking sum instead of product: replace zeros with large negatives
+    # was for tracking sum instead of product: replace zeros with large negatives
     # np.place(arr, arr == 0, -400)
-    
     
     maxprod = -1
     fb = FourBuffer()
     
-    # check rows
-    for row in range(arr.shape[0]):
+    for gen in get_generators(arr):
         fb.clear()
-        for val in gen_east(arr, row):
-            fb.pushpop(val)
-            maxprod = max(maxprod, fb.prod)
-    
-    # check cols
-    for col in range(arr.shape[1]):
-        fb.clear()
-        for val in gen_south(arr, row):
-            fb.pushpop(val)
-            maxprod = max(maxprod, fb.prod)
-    
-    # check diagonal down-right
-    for row in range(arr.shape[0]):
-        fb.clear()
-        for val in gen_southeast(arr, row, 0):
-            fb.pushpop(val)
-            maxprod = max(maxprod, fb.prod)
-    for col in range(arr.shape[1]):
-        fb.clear()
-        for val in gen_southeast(arr, 0, col):
-            fb.pushpop(val)
-            maxprod = max(maxprod, fb.prod)
-    
-    # check diagonal down-left
-    for row in range(arr.shape[0]):
-        fb.clear()
-        for val in gen_southwest(arr, row, arr.shape[1] - 1):
-            fb.pushpop(val)
-            maxprod = max(maxprod, fb.prod)
-    for col in range(arr.shape[1]):
-        fb.clear()
-        for val in gen_southwest(arr, 0, col):
+        for val in gen:
             fb.pushpop(val)
             maxprod = max(maxprod, fb.prod)
     
     return maxprod
 
 # trying out generators  =)
+def get_generators(arr):
+    # check rows
+    for row in range(arr.shape[0]):
+        yield gen_east(arr, row)
+    
+    # check columns
+    for col in range(arr.shape[1]):
+        yield gen_south(arr, col)
+    
+    # check diagonal down-right
+    for row in range(arr.shape[0]):
+        yield gen_southeast(arr, row, 0)
+    for col in range(arr.shape[1]):
+        yield gen_southeast(arr, 0, col)
+    
+    # check diagonal down-left
+    for row in range(arr.shape[0]):
+        yield gen_southwest(arr, row, arr.shape[1] - 1)
+    for col in range(arr.shape[1]):
+        yield gen_southwest(arr, 0, col)
+    
 def gen_east(arr, row):
     for i in range(arr.shape[0]):
         yield arr[row,i]
